@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#667eea">
+    <meta name="description" content="Daily Brain Teaser - A new puzzle every day with time-gated hints">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <title>Daily Brain Teaser</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .date {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .puzzle-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .puzzle-text {
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .hint-section {
+            margin-top: 20px;
+        }
+
+        .hint-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hint-locked {
+            background: #e9ecef;
+            border-left: 4px solid #6c757d;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hint-locked svg {
+            width: 20px;
+            height: 20px;
+            fill: #6c757d;
+        }
+
+        .solution-section {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 20px;
+            border-radius: 4px;
+            margin-top: 20px;
+            animation: fadeIn 0.5s;
+        }
+
+        .solution-section h3 {
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stat-box {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .solved-badge {
+            background: #28a745;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .timer {
+            text-align: center;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: #1976d2;
+            font-weight: 500;
+        }
+
+        .share-section {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .share-btn {
+            background: #28a745;
+        }
+
+        .share-btn:hover {
+            background: #218838;
+        }
+
+        .copied-message {
+            color: #28a745;
+            font-size: 0.9em;
+            margin-top: 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .copied-message.show {
+            opacity: 1;
+        }
+
+        .answer-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1em;
+            margin-bottom: 10px;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 Daily Brain Teaser</h1>
+        <div class="date" id="dateDisplay"></div>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-number" id="currentStreak">0</div>
+                <div class="stat-label">Current Streak</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="totalSolved">0</div>
+                <div class="stat-label">Total Solved</div>
+            </div>
+        </div>
+
+        <div id="solvedBadge"></div>
+
+        <div class="puzzle-section">
+            <div class="puzzle-text" id="puzzleText">Loading today's puzzle...</div>
+            
+            <div id="answerSection">
+                <input type="text" class="answer-input" id="answerInput" placeholder="Enter your answer...">
+                <button class="btn" id="submitBtn" onclick="checkAnswer()">Submit Answer</button>
+            </div>
+        </div>
+
+        <div id="timerSection"></div>
+
+        <div class="hint-section" id="hintSection"></div>
+
+        <div class="share-section">
+            <button class="btn share-btn" onclick="shareApp()">📤 Share with Friends</button>
+            <div class="copied-message" id="copiedMessage">Link copied to clipboard!</div>
+        </div>
+    </div>
+
+    <script>
+        // Puzzle database - in a real app, this would be much larger or fetched from an API
+        const puzzles = [
+            {
+                question: "I speak without a mouth and hear without ears. I have no body, but I come alive with wind. What am I?",
+                hints: [
+                    "Think about sounds you hear outdoors",
+                    "It bounces off surfaces like canyon walls",
+                    "Mountains and valleys create me best",
+                    "You shout and I respond",
+                    "I repeat what you say",
+                    "The answer rhymes with 'gecko'"
+                ],
+                answer: "echo",
+                alternatives: ["an echo"]
+            },
+            {
+                question: "The more you take, the more you leave behind. What am I?",
+                hints: [
+                    "Think about movement",
+                    "Every person creates these when they move",
+                    "You can follow them in sand or snow",
+                    "Detectives look for these at crime scenes",
+                    "They show where you've been",
+                    "They're made by your feet"
+                ],
+                answer: "footsteps",
+                alternatives: ["steps", "footprints", "foot steps"]
+            },
+            {
+                question: "What has keys but no locks, space but no room, and you can enter but can't go inside?",
+                hints: [
+                    "You probably use one every day",
+                    "It has letters and numbers on it",
+                    "It's an electronic device",
+                    "You type on it",
+                    "Computers need this to input text",
+                    "The spacebar is its longest key"
+                ],
+                answer: "keyboard",
+                alternatives: ["a keyboard", "computer keyboard"]
+            },
+            {
+                question: "I have cities, but no houses. I have mountains, but no trees. I have water, but no fish. What am I?",
+                hints: [
+                    "You might use this for navigation",
+                    "It shows geography",
+                    "Paper or digital versions exist",
+                    "Road trips require one",
+                    "GPS replaced the physical version",
+                    "Atlas is a book of these"
+                ],
+                answer: "map",
+                alternatives: ["a map"]
+            },
+            {
+                question: "What can travel around the world while staying in the corner?",
+                hints: [
+                    "Think about mail",
+                    "It's small and adhesive",
+                    "You put it on envelopes",
+                    "The post office sells these",
+                    "It has pictures and value printed on it",
+                    "You lick the back of it"
+                ],
+                answer: "stamp",
+                alternatives: ["a stamp", "postage stamp"]
+            },
+            {
+                question: "I'm tall when I'm young and short when I'm old. What am I?",
+                hints: [
+                    "Fire is involved",
+                    "You might use this for light",
+                    "Birthday cakes have these",
+                    "Wax is the main material",
+                    "You blow it out to make a wish",
+                    "It has a wick"
+                ],
+                answer: "candle",
+                alternatives: ["a candle"]
+            },
+            {
+                question: "What has hands but cannot clap?",
+                hints: [
+                    "You look at it to know something",
+                    "It's often on walls or wrists",
+                    "It has numbers",
+                    "Tick-tock",
+                    "It tells you when to go somewhere",
+                    "Hours and minutes are shown"
+                ],
+                answer: "clock",
+                alternatives: ["a clock", "watch", "a watch"]
+            }
+        ];
+
+        // Storage helper functions with fallback to localStorage
+        const storage = {
+            async get(key, shared = false) {
+                // Try window.storage first
+                if (window.storage) {
+                    try {
+                        return await window.storage.get(key, shared);
+                    } catch (error) {
+                        console.log('window.storage.get failed, falling back to localStorage');
+                    }
+                }
+                
+                // Fallback to localStorage
+                const value = localStorage.getItem(key);
+                return value ? { key, value, shared } : null;
+            },
+            
+            async set(key, value, shared = false) {
+                // Try window.storage first
+                if (window.storage) {
+                    try {
+                        return await window.storage.set(key, value, shared);
+                    } catch (error) {
+                        console.log('window.storage.set failed, falling back to localStorage');
+                    }
+                }
+                
+                // Fallback to localStorage
+                localStorage.setItem(key, value);
+                return { key, value, shared };
+            }
+        };
+
+        // Get day number since epoch (for consistent daily puzzle)
+        function getDayNumber() {
+            const now = new Date();
+            const start = new Date(now.getFullYear(), 0, 0);
+            const diff = now - start;
+            const oneDay = 1000 * 60 * 60 * 24;
+            return Math.floor(diff / oneDay);
+        }
+
+        // Get today's puzzle
+        function getTodaysPuzzle() {
+            const dayNumber = getDayNumber();
+            return puzzles[dayNumber % puzzles.length];
+        }
+
+        // Format date
+        function formatDate() {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            return new Date().toLocaleDateString('en-US', options);
+        }
+
+        // Hint unlock times (in 24-hour format)
+        const hintTimes = [10, 12, 14, 16, 18, 20, 22]; // 10am, 12pm, 2pm, 4pm, 6pm, 8pm, 10pm
+
+        // Get current available hints based on time
+        function getAvailableHints() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            
+            let availableCount = 0;
+            for (let i = 0; i < hintTimes.length; i++) {
+                if (currentHour >= hintTimes[i]) {
+                    availableCount = i + 1;
+                }
+            }
+            return availableCount;
+        }
+
+        // Get time until next hint
+        function getTimeUntilNextHint() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            
+            for (let hintHour of hintTimes) {
+                if (currentHour < hintHour || (currentHour === hintHour && currentMinute === 0)) {
+                    const nextHintTime = new Date();
+                    nextHintTime.setHours(hintHour, 0, 0, 0);
+                    const diff = nextHintTime - now;
+                    const hours = Math.floor(diff / (1000 * 60 * 60));
+                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    return { hours, minutes, total: diff };
+                }
+            }
+            
+            // All hints unlocked for today
+            return null;
+        }
+
+        // Load user stats from storage
+        async function loadStats() {
+            try {
+                const streakData = await storage.get('currentStreak', false);
+                const totalData = await storage.get('totalSolved', false);
+                const lastSolvedData = await storage.get('lastSolved', false);
+                
+                const currentStreak = streakData ? parseInt(streakData.value) : 0;
+                const totalSolved = totalData ? parseInt(totalData.value) : 0;
+                const lastSolved = lastSolvedData ? parseInt(lastSolvedData.value) : 0;
+                
+                // Check if streak should be reset (missed a day)
+                const today = getDayNumber();
+                if (lastSolved && lastSolved < today - 1) {
+                    await storage.set('currentStreak', '0', false);
+                    document.getElementById('currentStreak').textContent = '0';
+                } else {
+                    document.getElementById('currentStreak').textContent = currentStreak;
+                }
+                
+                document.getElementById('totalSolved').textContent = totalSolved;
+            } catch (error) {
+                console.log('Stats not found, starting fresh');
+            }
+        }
+
+        // Check if today's puzzle is already solved
+        async function isTodaySolved() {
+            try {
+                const solvedData = await storage.get('lastSolved', false);
+                if (solvedData) {
+                    const lastSolved = parseInt(solvedData.value);
+                    return lastSolved === getDayNumber();
+                }
+            } catch (error) {
+                return false;
+            }
+            return false;
+        }
+
+        // Render hints
+        async function renderHints() {
+            const puzzle = getTodaysPuzzle();
+            const availableHints = getAvailableHints();
+            const hintSection = document.getElementById('hintSection');
+            const solved = await isTodaySolved();
+            
+            let html = '<h3 style="margin-bottom: 15px; color: #667eea;">💡 Hints</h3>';
+            
+            for (let i = 0; i < puzzle.hints.length; i++) {
+                if (i < availableHints || solved) {
+                    html += `<div class="hint-box"><strong>Hint ${i + 1}:</strong> ${puzzle.hints[i]}</div>`;
+                } else {
+                    const unlockTime = hintTimes[i];
+                    const period = unlockTime >= 12 ? 'PM' : 'AM';
+                    const displayHour = unlockTime > 12 ? unlockTime - 12 : unlockTime;
+                    html += `
+                        <div class="hint-locked">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm9 14H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/>
+                            </svg>
+                            <span>Hint ${i + 1} unlocks at ${displayHour}:00 ${period}</span>
+                        </div>
+                    `;
+                }
+            }
+            
+            hintSection.innerHTML = html;
+        }
+
+        // Update timer display
+        function updateTimer() {
+            const timeUntilNext = getTimeUntilNextHint();
+            const timerSection = document.getElementById('timerSection');
+            
+            if (timeUntilNext && timeUntilNext.total > 0) {
+                const puzzle = getTodaysPuzzle();
+                const currentHints = getAvailableHints();
+                
+                if (currentHints < puzzle.hints.length) {
+                    timerSection.innerHTML = `
+                        <div class="timer">
+                            ⏰ Next hint in ${timeUntilNext.hours}h ${timeUntilNext.minutes}m
+                        </div>
+                    `;
+                } else {
+                    timerSection.innerHTML = '';
+                }
+            } else {
+                timerSection.innerHTML = '';
+            }
+        }
+
+        // Check answer
+        async function checkAnswer() {
+            const input = document.getElementById('answerInput');
+            const userAnswer = input.value.trim().toLowerCase();
+            const puzzle = getTodaysPuzzle();
+            
+            if (!userAnswer) {
+                alert('Please enter an answer!');
+                return;
+            }
+            
+            const correctAnswers = [puzzle.answer, ...puzzle.alternatives].map(a => a.toLowerCase());
+            
+            if (correctAnswers.includes(userAnswer)) {
+                // Show success message
+                alert('🎉 Correct! Great job solving today\'s puzzle!');
+                await markAsSolved();
+                input.value = '';
+            } else {
+                alert('❌ Not quite! Keep thinking or wait for more hints.');
+                input.value = '';
+            }
+        }
+
+        // Mark puzzle as solved
+        async function markAsSolved() {
+            const today = getDayNumber();
+            console.log('markAsSolved called, today =', today);
+            
+            try {
+                // Check if already solved today - prevent duplicate counting
+                const alreadySolved = await isTodaySolved();
+                console.log('Already solved?', alreadySolved);
+                
+                // Always update last solved day
+                await storage.set('lastSolved', today.toString(), false);
+                console.log('Set lastSolved to', today);
+                
+                // Only update streak and total if this is the first solve today
+                if (!alreadySolved) {
+                    // Update streak
+                    const streakData = await storage.get('currentStreak', false);
+                    const currentStreak = streakData ? parseInt(streakData.value) : 0;
+                    console.log('Current streak:', currentStreak);
+                    const newStreak = currentStreak + 1;
+                    await storage.set('currentStreak', newStreak.toString(), false);
+                    console.log('New streak set to:', newStreak);
+                    
+                    // Update total solved
+                    const totalData = await storage.get('totalSolved', false);
+                    const totalSolved = totalData ? parseInt(totalData.value) : 0;
+                    console.log('Current total:', totalSolved);
+                    const newTotal = totalSolved + 1;
+                    await storage.set('totalSolved', newTotal.toString(), false);
+                    console.log('New total set to:', newTotal);
+                    
+                    // Update display with new values
+                    document.getElementById('currentStreak').textContent = newStreak;
+                    document.getElementById('totalSolved').textContent = newTotal;
+                    console.log('Display updated');
+                }
+                
+                // Refresh the puzzle display to show solved state
+                await displayPuzzle();
+            } catch (error) {
+                console.error('Error saving solve:', error);
+                console.error('Error details:', error.message, error.stack);
+                alert('Error saving progress: ' + error.message);
+            }
+        }
+
+        // Display the puzzle
+        async function displayPuzzle() {
+            const puzzle = getTodaysPuzzle();
+            const solved = await isTodaySolved();
+            
+            document.getElementById('puzzleText').textContent = puzzle.question;
+            
+            if (solved) {
+                document.getElementById('solvedBadge').innerHTML = '<div class="solved-badge">✓ Solved!</div>';
+                document.getElementById('answerSection').innerHTML = `
+                    <div class="solution-section">
+                        <h3>Solution</h3>
+                        <p><strong>Answer:</strong> ${puzzle.answer.charAt(0).toUpperCase() + puzzle.answer.slice(1)}</p>
+                        <p style="margin-top: 10px; color: #666;">Great job! Come back tomorrow for a new puzzle.</p>
+                    </div>
+                `;
+            } else {
+                document.getElementById('solvedBadge').innerHTML = '';
+            }
+            
+            renderHints();
+            updateTimer();
+        }
+
+        // Share functionality
+        function shareApp() {
+            const url = window.location.href;
+            const text = `🧠 Try today's Daily Brain Teaser! Can you solve it?`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Daily Brain Teaser',
+                    text: text,
+                    url: url
+                }).catch(() => {
+                    copyToClipboard(url);
+                });
+            } else {
+                copyToClipboard(url);
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const message = document.getElementById('copiedMessage');
+                message.classList.add('show');
+                setTimeout(() => {
+                    message.classList.remove('show');
+                }, 2000);
+            });
+        }
+
+        // Initialize app
+        async function init() {
+            document.getElementById('dateDisplay').textContent = formatDate();
+            await loadStats();
+            await displayPuzzle();
+            
+            // Update every minute
+            setInterval(() => {
+                updateTimer();
+                renderHints();
+            }, 60000);
+            
+            // Allow Enter key to submit
+            document.getElementById('answerInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    checkAnswer();
+                }
+            });
+        }
+
+        // Start the app
+        init();
+
+        // Register service worker for PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js')
+                .then(reg => console.log('Service Worker registered'))
+                .catch(err => console.log('Service Worker registration failed'));
+        }
+    </script>
+</body>
+</html>
